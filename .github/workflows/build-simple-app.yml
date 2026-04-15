@@ -2,7 +2,7 @@ name: Build & Push simple-app
 
 on:
   pull_request:
-    branches: [homework/lesson03/AnastasiiaAleksieienko]
+    branches: [main]
     paths:
       - "hw2-docker-images/apps/simple-app/**"
       - ".github/workflows/build-simple-app.yml"
