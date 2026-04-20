@@ -1,0 +1,58 @@
+name: Test Docker Compose Setup
+
+on:
+  workflow_dispatch: # Only manual
+
+jobs:
+  test-docker-compose:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Build and start services
+      run: |
+        cd hw3-docker-compose
+        docker-compose up -d
+
+    - name: Wait for services to be ready
+      run: |
+        cd hw3-docker-compose
+        timeout 30 bash -c 'while ! curl -f http://localhost:8080/health >/dev/null 2>&1; do sleep 2; done'
+
+    - name: Test application endpoints
+      run: |
+        curl -f http://localhost:8080/
+
+        response=$(curl -s http://localhost:8080/health)
+        echo "Health response: $response"
+
+        echo "$response" | grep -q "healthy"
+        echo "$response" | grep -q "version"
+
+    - name: Test Redis connectivity
+      run: |
+        cd hw3-docker-compose
+        docker-compose exec -T redis redis-cli ping
+
+    - name: Check environment variables
+      run: |
+        cd hw3-docker-compose
+        docker-compose exec -T simple-app env | grep APP_STORE=redis
+        docker-compose exec -T simple-app env | grep APP_REDIS_URL=redis://redis:6379/0
+
+    - name: Show logs on failure
+      if: failure()
+      run: |
+        cd hw3-docker-compose
+        echo "Simple App Logs >"
+        docker-compose logs simple-app
+        echo "Redis Logs >"
+        docker-compose logs redis
+
+    - name: Cleanup
+      if: always()
+      run: |
+        cd hw3-docker-compose
+        docker-compose down -v
