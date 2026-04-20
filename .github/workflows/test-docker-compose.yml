@@ -21,6 +21,24 @@ jobs:
         cd hw3-docker-compose
         timeout 30 bash -c 'while ! curl -f http://localhost:8080/health >/dev/null 2>&1; do sleep 2; done'
 
+    - name: Docker Image Diagnostics
+      run: |
+        cd hw3-docker-compose
+        echo "Image sizes:"
+        docker images --format "table {{.Repository}}\t{{.Tag}}\t{{.Size}}" | grep -E "(hw3-docker-compose|redis)"
+
+        echo "Layer count:"
+        docker history hw3-docker-compose-simple-app:latest --quiet | wc -l
+
+    - name: Security Check
+      run: |
+        cd hw3-docker-compose
+        echo "User running inside container:"
+        docker compose exec -T simple-app whoami
+
+        echo "User ID and Group ID:"
+        docker compose exec -T simple-app id
+
     - name: Test application endpoints
       run: |
         curl -f http://localhost:8080/
