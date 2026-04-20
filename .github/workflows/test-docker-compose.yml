@@ -14,7 +14,7 @@ jobs:
     - name: Build and start services
       run: |
         cd hw3-docker-compose
-        docker-compose up -d
+        docker compose up -d
 
     - name: Wait for services to be ready
       run: |
@@ -34,25 +34,25 @@ jobs:
     - name: Test Redis connectivity
       run: |
         cd hw3-docker-compose
-        docker-compose exec -T redis redis-cli ping
+        docker compose exec -T redis redis-cli ping
 
     - name: Check environment variables
       run: |
         cd hw3-docker-compose
-        docker-compose exec -T simple-app env | grep APP_STORE=redis
-        docker-compose exec -T simple-app env | grep APP_REDIS_URL=redis://redis:6379/0
+        docker compose exec -T simple-app env | grep APP_STORE=redis
+        docker compose exec -T simple-app env | grep APP_REDIS_URL=redis://redis:6379/0
 
     - name: Show logs on failure
       if: failure()
       run: |
         cd hw3-docker-compose
         echo "Simple App Logs >"
-        docker-compose logs simple-app
+        docker compose logs simple-app
         echo "Redis Logs >"
-        docker-compose logs redis
+        docker compose logs redis
 
     - name: Cleanup
       if: always()
       run: |
         cd hw3-docker-compose
-        docker-compose down -v
+        docker compose down -v
