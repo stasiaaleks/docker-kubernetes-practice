@@ -9,8 +9,8 @@ COPY . .
 RUN CGO_ENABLED=0 GOOS=linux go build -o main .
 
 # Runtime stage
-FROM ubuntu:22.04.3
-RUN apt-get update && apt-get install -y curl ca-certificates && rm -rf /var/lib/apt/lists/*
+FROM alpine:3.19@sha256:c5b1261d6d3e43071626931fc004f70149baeba2c8ec672bd4f27761f8e1ad6b
+RUN apk --no-cache add curl ca-certificates
 
 RUN groupadd -r appuser && useradd -r -g appuser appuser
 WORKDIR /app
