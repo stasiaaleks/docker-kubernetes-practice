@@ -14,12 +14,30 @@ jobs:
     - name: Build and start services
       run: |
         cd hw3-docker-compose
-        docker-compose up -d
+        docker compose up -d
 
     - name: Wait for services to be ready
       run: |
         cd hw3-docker-compose
         timeout 30 bash -c 'while ! curl -f http://localhost:8080/health >/dev/null 2>&1; do sleep 2; done'
+
+    - name: Docker Image Diagnostics
+      run: |
+        cd hw3-docker-compose
+        echo "Image sizes:"
+        docker images --format "table {{.Repository}}\t{{.Tag}}\t{{.Size}}" | grep -E "(hw3-docker-compose|redis)"
+
+        echo "Layer count:"
+        docker history hw3-docker-compose-simple-app:latest --quiet | wc -l
+
+    - name: Security Check
+      run: |
+        cd hw3-docker-compose
+        echo "User running inside container:"
+        docker compose exec -T simple-app whoami
+
+        echo "User ID and Group ID:"
+        docker compose exec -T simple-app id
 
     - name: Test application endpoints
       run: |
@@ -34,25 +52,25 @@ jobs:
     - name: Test Redis connectivity
       run: |
         cd hw3-docker-compose
-        docker-compose exec -T redis redis-cli ping
+        docker compose exec -T redis redis-cli ping
 
     - name: Check environment variables
       run: |
         cd hw3-docker-compose
-        docker-compose exec -T simple-app env | grep APP_STORE=redis
-        docker-compose exec -T simple-app env | grep APP_REDIS_URL=redis://redis:6379/0
+        docker compose exec -T simple-app env | grep APP_STORE=redis
+        docker compose exec -T simple-app env | grep APP_REDIS_URL=redis://redis:6379/0
 
     - name: Show logs on failure
       if: failure()
       run: |
         cd hw3-docker-compose
         echo "Simple App Logs >"
-        docker-compose logs simple-app
+        docker compose logs simple-app
         echo "Redis Logs >"
-        docker-compose logs redis
+        docker compose logs redis
 
     - name: Cleanup
       if: always()
       run: |
         cd hw3-docker-compose
-        docker-compose down -v
+        docker compose down -v
