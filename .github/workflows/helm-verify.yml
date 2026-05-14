@@ -1,0 +1,32 @@
+name: Verify Helm Chart
+
+on:
+  workflow_dispatch:
+
+jobs:
+  helm-verify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: azure/setup-helm@v4
+        with:
+          version: "3.17.3"
+
+      - name: Lint chart
+        run: helm lint hw9-helm/course-app
+
+      - name: Render templates (default values)
+        run: helm template course-app hw9-helm/course-app
+
+      - name: Render templates (custom overrides)
+        run: |
+          helm template course-app hw9-helm/course-app \
+            --set replicaCount=3 \
+            --set image.tag=v1.0.0 \
+            --set ingress.host=staging.sample.com \
+            --set ingress.tls.enabled=false
+
+      - name: Package chart
+        run: helm package hw9-helm/course-app --destination /tmp
