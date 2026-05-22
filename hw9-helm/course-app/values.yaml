@@ -1,0 +1,51 @@
+replicaCount: 2
+
+image:
+  repository: course-app
+  tag: latest
+  pullPolicy: Never
+
+service:
+  type: ClusterIP
+  port: 8080
+
+ingress:
+  enabled: true
+  className: nginx
+  host: course-app.local
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  tls:
+    enabled: true
+    secretName: course-app-tls
+
+app:
+  message: "Welcome to the Course App"
+  store: "redis"
+  # Bitnami Redis master service
+  # When bitnami/redis is installed with release name "redis",
+  # master service is named "redis-master" in the same namespace
+  redisUrl: "redis://redis-master:6379"
+
+resources:
+  requests:
+    memory: "128Mi"
+    cpu: "100m"
+  limits:
+    memory: "256Mi"
+    cpu: "200m"
+
+probes:
+  readiness:
+    path: /
+    port: 8080
+    initialDelaySeconds: 10
+    periodSeconds: 5
+  liveness:
+    path: /
+    port: 8080
+    initialDelaySeconds: 30
+    periodSeconds: 10
+
+nameOverride: ""
+fullnameOverride: ""
