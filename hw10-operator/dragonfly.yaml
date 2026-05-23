@@ -1,0 +1,17 @@
+---
+apiVersion: dragonflydb.io/v1alpha1
+kind: Dragonfly
+metadata:
+  name: dragonfly
+  labels:
+    app: dragonfly
+spec:
+  replicas: 2
+  image: ghcr.io/dragonflydb/dragonfly:v1.38.1
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "100m"
+    limits:
+      memory: "512Mi"
+      cpu: "500m"
